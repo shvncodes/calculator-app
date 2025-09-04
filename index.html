@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #main{
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #mainBox{
+            width: 100%;
+            background-color: #34495e;
+            max-width: 750px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        #inputBox{
+            width: 100%;
+            background-color: white;
+            padding: 5px;
+            font-size: 25px;
+            font-weight: bold;
+            min-height: 90px;
+            border-radius: 10px;
+            text-align:end;
+        }
+
+        #keypad{
+            width: 100%;
+            min-height: 80px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #column1, #column2, #column3, #column4, #column5 {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            border-radius: 5px;
+        }
+
+        .numbers{
+            width: 100%;
+            font-size: 20px;
+            text-align: center;
+            border-radius: 5px;
+            background-color: #828686;
+            cursor: pointer;
+        }
+
+        .operations{
+            width: 100%;
+            font-size: 20px;
+            text-align: center;
+            border-radius: 5px;
+            background-color: #E67E22;
+            cursor: pointer;
+        }
+        #clear, #del{
+            background-color: #E74C3C;
+        }
+    </style>
+</head>
+<body id="main">
+    <div id="mainBox">
+        <input id="inputBox" placeholder="0">
+        <div id="keypad">
+            <div id="column1">
+                <div id="clear" class="operations">Clear</div>
+                <div id="del" class="operations">Del</div>
+                <div id="/" type="OPERATOR" class="operations key">/</div>
+            </div>
+            <div id="column2">
+                <div id="7" type="NUMBER" class="numbers key">7</div>
+                <div id="8" type="NUMBER" class="numbers key">8</div>
+                <div id="9" type="NUMBER" class="numbers key">9</div>
+                <div id="x" type="OPERATOR" class="operations key">x</div>
+            </div>
+            <div id="column3">
+                <div id="4" type="NUMBER" class="numbers key">4</div>
+                <div id="5" type="NUMBER" class="numbers key">5</div>
+                <div id="6" type="NUMBER" class="numbers key">6</div>
+                <div id="-" type="OPERATOR" class="operations key">-</div>
+            </div>
+            <div id="column4">
+                <div id="1" type="NUMBER" class="numbers key">1</div>
+                <div id="2" type="NUMBER" class="numbers key">2</div>
+                <div id="3" type="NUMBER" class="numbers key">3</div>
+                <div id="+" type="OPERATOR" class="operations key">+</div>
+            </div>
+            <div id="column5">
+                <div id="0" class="numbers key">0</div>
+                <div id="." type="NUMBER" class="numbers key">.</div>
+                <div id="equal" class="operations">=</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.querySelector("#inputBox");
+        const keys = document.querySelectorAll(".key");
+        const equalsTo = document.querySelector("#equal");
+        const del = document.querySelector("#del");
+        const clear = document.querySelector("#clear");
+        
+        let itemStack = [];
+
+        function display() {
+            input.value = ""
+            for(let i = 0; i < itemStack.length; i++) {
+                input.value = input.value + itemStack[i].data;
+            }
+        }
+
+        function deleteElement() {
+            if(itemStack.length === 0) return;
+            const lastIdx = itemStack.length - 1;
+            if(itemStack[lastIdx].type === 'OPERATOR') {
+                itemStack.pop();
+            } else {
+                const lastData = itemStack[lastIdx].data;
+                if(lastData.length < 2) itemStack.pop();
+                else {
+                    itemStack[lastIdx].data = lastData.substring(0, lastData.length -1);
+                }
+            }
+
+            display();
+        }
+
+        function solution() {
+            if(itemStack[itemStack.length - 1].type === 'OPERATOR') return;
+
+            let left = parseFloat(itemStack[0].data);
+            let right = 0;
+
+            for(let i = 1; i < itemStack.length; i++) {
+                if(itemStack[i].type === 'NUMBER') {
+                    right = parseFloat(itemStack[i].data);
+                } else {
+                    if(itemStack[i].data === '+') {
+                        left = left + right;
+                    } else if(itemStack[i].data === '-') {
+                        left = left - right;
+                    } else if(itemStack[i].data === 'x') {
+                        left = left * right;
+                    } else {
+                        left = left / right;
+                    }
+                }
+            }
+            return left;
+        }
+
+        function handleClick(key) {
+            const type = key.getAttribute("type");
+
+            if(type === 'NUMBER') {
+                if(itemStack.length === 0) {
+                    const element = {
+                        data: key.id,
+                        type: type
+                    }
+                    itemStack.push(element);
+                } else {
+                    const lastIndex = itemStack.length - 1;
+                    if(itemStack[lastIndex].type === 'OPERATOR') {
+                        const element = {
+                            data: key.id,
+                            type: type
+                        }
+                        itemStack.push(element);
+                    } else {
+                        const data = itemStack[lastIndex].data;
+                        itemStack[lastIndex].data = data + key.id;
+                    }
+                }
+            } else {
+                if(itemStack.length === 0) return;
+                // check arr last -> op hai to just update the OPERATOR otherise push this
+                const lastIndx = itemStack.length - 1;
+                if(itemStack[lastIndx].type === 'OPERATOR') {
+                    itemStack[lastIndx].data = key.id;
+                } else {
+                    const element = {
+                        data: key.id,
+                        type: type
+                    }
+                    itemStack.push(element); 
+                }
+            }
+            display();
+        }
+        console.log(itemStack);
+        
+        for(let i = 0; i < keys.length; i++) {
+            keys[i].addEventListener("click", () => {
+                handleClick(keys[i]);
+            });
+        }
+
+        equalsTo.addEventListener("click", () => {
+            const answer = solution();
+            if(answer) {
+                input.value = answer;
+            } else {
+                alert("Enter a number");
+            }
+        });
+
+        del.addEventListener("click", deleteElement);
+
+        clear.addEventListener("click", () => {
+            itemStack = [];
+            input.value = "";
+        })
+
+    </script>
+
+</body>
+</html>
+
+<!-- 
+const itemStack = [
+    {
+        data: "78",
+        type: 'NUMBER'
+    },
+    {
+        data: '+',
+        type: 'OPERATOR'
+    },
+    {
+        data: "",
+        type: 'NUMBER'
+    },
+]
+
+
+for(.....) {
+    itemStack[i].data
+}
+
+
+-->
