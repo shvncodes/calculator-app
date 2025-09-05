@@ -77,7 +77,16 @@
             background-color: #E67E22;
             cursor: pointer;
         }
+        .divide, .equal{
+            width: 40%;
+        }
+
+        .decimal, .zero {
+            width: 60%;
+        }
+        
         #clear, #del{
+            width: 60%;
             background-color: #E74C3C;
         }
     </style>
@@ -89,7 +98,7 @@
             <div id="column1">
                 <div id="clear" class="operations">Clear</div>
                 <div id="del" class="operations">Del</div>
-                <div id="/" type="OPERATOR" class="operations key">/</div>
+                <div id="/" type="OPERATOR" class="divide operations key">/</div>
             </div>
             <div id="column2">
                 <div id="7" type="NUMBER" class="numbers key">7</div>
@@ -110,9 +119,9 @@
                 <div id="+" type="OPERATOR" class="operations key">+</div>
             </div>
             <div id="column5">
-                <div id="0" class="numbers key">0</div>
-                <div id="." type="NUMBER" class="numbers key">.</div>
-                <div id="equal" class="operations">=</div>
+                <div id="0" type="NUMBER" class="zero numbers key">0</div>
+                <div id="." type="NUMBER" class="decimal numbers key">.</div>
+                <div id="equal" class="operations equal">=</div>
             </div>
         </div>
     </div>
@@ -134,7 +143,10 @@
         }
 
         function deleteElement() {
-            if(itemStack.length === 0) return;
+            if(itemStack.length === 0) {
+                input.value = "";
+                return;
+            }
             const lastIdx = itemStack.length - 1;
             if(itemStack[lastIdx].type === 'OPERATOR') {
                 itemStack.pop();
@@ -151,14 +163,19 @@
 
         function solution() {
             if(itemStack[itemStack.length - 1].type === 'OPERATOR') return;
+            if(itemStack.length < 2) {
+                const ans = itemStack[itemStack.length - 1].data;
+                return ans;
+            }
 
             let left = parseFloat(itemStack[0].data);
-            let right = 0;
+            let right = parseFloat(itemStack[2].data);
 
-            for(let i = 1; i < itemStack.length; i++) {
-                if(itemStack[i].type === 'NUMBER') {
-                    right = parseFloat(itemStack[i].data);
-                } else {
+            for(let i = 1; i < itemStack.length-1; i++) {
+                if(itemStack[i+1].type === 'NUMBER') {
+                    right = parseFloat(itemStack[i+1].data);
+                } 
+                if(itemStack[i].type === 'OPERATOR'){
                     if(itemStack[i].data === '+') {
                         left = left + right;
                     } else if(itemStack[i].data === '-') {
@@ -212,18 +229,26 @@
             }
             display();
         }
-        console.log(itemStack);
         
         for(let i = 0; i < keys.length; i++) {
             keys[i].addEventListener("click", () => {
                 handleClick(keys[i]);
             });
         }
+        // console.log(itemStack);
 
         equalsTo.addEventListener("click", () => {
             const answer = solution();
-            if(answer) {
+            if(answer || answer === 0) {
                 input.value = answer;
+                itemStack = [];
+                if(answer != Infinity) {
+                    const element = {
+                        data: answer.toString(),
+                        type: 'NUMBER'
+                    }
+                    itemStack.push(element);
+                }
             } else {
                 alert("Enter a number");
             }
