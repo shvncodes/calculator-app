@@ -38,6 +38,7 @@
             min-height: 90px;
             border-radius: 10px;
             text-align:end;
+            color:black;
         }
 
         #keypad{
@@ -93,7 +94,7 @@
 </head>
 <body id="main">
     <div id="mainBox">
-        <input id="inputBox" placeholder="0">
+        <input id="inputBox" disabled placeholder="0">
         <div id="keypad">
             <div id="column1">
                 <div id="clear" class="operations">Clear</div>
@@ -162,20 +163,29 @@
         }
 
         function solution() {
-            if(itemStack[itemStack.length - 1].type === 'OPERATOR') return;
-            if(itemStack.length < 2) {
-                const ans = itemStack[itemStack.length - 1].data;
-                return ans;
+            if(itemStack[itemStack.length - 1].type === 'OPERATOR' && itemStack[itemStack.length - 1].data != '-') {
+                return;
+            }
+            if(itemStack.length < 3) {
+                if(itemStack.length < 2) {
+                    if(itemStack[0].data === '-') return;
+                    return itemStack[0].data;
+                }
+                if(itemStack[0].data === '-' && itemStack[1].type === 'NUMBER') {
+                    const ans = itemStack[0].data + itemStack[1].data;
+                    return ans;
+                }
+                return;
             }
 
-            let left = parseFloat(itemStack[0].data);
-            let right = parseFloat(itemStack[2].data);
+            let left = 0;
 
-            for(let i = 1; i < itemStack.length-1; i++) {
-                if(itemStack[i+1].type === 'NUMBER') {
-                    right = parseFloat(itemStack[i+1].data);
+            for(let i = 0; i < itemStack.length; i++) {
+                if(itemStack[i].type === 'NUMBER') {
+                    left = parseFloat(itemStack[i].data); 
                 } 
-                if(itemStack[i].type === 'OPERATOR'){
+                else if(itemStack[i].type === 'OPERATOR'){
+                    const right = parseFloat(itemStack[i+1].data);
                     if(itemStack[i].data === '+') {
                         left = left + right;
                     } else if(itemStack[i].data === '-') {
@@ -185,6 +195,7 @@
                     } else {
                         left = left / right;
                     }
+                    i++;
                 }
             }
             return left;
@@ -214,21 +225,30 @@
                     }
                 }
             } else {
-                if(itemStack.length === 0) return;
-                // check arr last -> op hai to just update the OPERATOR otherise push this
-                const lastIndx = itemStack.length - 1;
-                if(itemStack[lastIndx].type === 'OPERATOR') {
-                    itemStack[lastIndx].data = key.id;
-                } else {
-                    const element = {
-                        data: key.id,
-                        type: type
+                if(itemStack.length === 0) {
+                    if(key.getAttribute("id") === '-') {
+                        const element = {
+                            data: key.id,
+                            type: type
+                        }
+                        itemStack.push(element);
                     }
-                    itemStack.push(element); 
+                } else {
+                    const lastIndx = itemStack.length - 1;
+                    if(itemStack[lastIndx].type === 'OPERATOR') {
+                        itemStack[lastIndx].data = key.id;
+                    } else {
+                        const element = {
+                            data: key.id,
+                            type: type
+                        }
+                        itemStack.push(element); 
+                    }
                 }
             }
             display();
         }
+        console.log(itemStack);
         
         for(let i = 0; i < keys.length; i++) {
             keys[i].addEventListener("click", () => {
@@ -242,7 +262,7 @@
             if(answer || answer === 0) {
                 input.value = answer;
                 itemStack = [];
-                if(answer != Infinity) {
+                if(answer != Infinity && answer != -Infinity) {
                     const element = {
                         data: answer.toString(),
                         type: 'NUMBER'
