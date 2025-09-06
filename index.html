@@ -99,29 +99,29 @@
             <div id="column1">
                 <div id="clear" class="operations">Clear</div>
                 <div id="del" class="operations">Del</div>
-                <div id="/" type="OPERATOR" class="divide operations key">/</div>
+                <div data-value="/" data-type="OPERATOR" class="divide operations key">/</div>
             </div>
             <div id="column2">
-                <div id="7" type="NUMBER" class="numbers key">7</div>
-                <div id="8" type="NUMBER" class="numbers key">8</div>
-                <div id="9" type="NUMBER" class="numbers key">9</div>
-                <div id="x" type="OPERATOR" class="operations key">x</div>
+                <div data-value="7" data-type="NUMBER" class="numbers key">7</div>
+                <div data-value="8" data-type="NUMBER" class="numbers key">8</div>
+                <div data-value="9" data-type="NUMBER" class="numbers key">9</div>
+                <div data-value="x" data-type="OPERATOR" class="operations key">x</div>
             </div>
             <div id="column3">
-                <div id="4" type="NUMBER" class="numbers key">4</div>
-                <div id="5" type="NUMBER" class="numbers key">5</div>
-                <div id="6" type="NUMBER" class="numbers key">6</div>
-                <div id="-" type="OPERATOR" class="operations key">-</div>
+                <div data-value="4" data-type="NUMBER" class="numbers key">4</div>
+                <div data-value="5" data-type="NUMBER" class="numbers key">5</div>
+                <div data-value="6" data-type="NUMBER" class="numbers key">6</div>
+                <div data-value="-" data-type="OPERATOR" class="operations key">-</div>
             </div>
             <div id="column4">
-                <div id="1" type="NUMBER" class="numbers key">1</div>
-                <div id="2" type="NUMBER" class="numbers key">2</div>
-                <div id="3" type="NUMBER" class="numbers key">3</div>
-                <div id="+" type="OPERATOR" class="operations key">+</div>
+                <div data-value="1" data-type="NUMBER" class="numbers key">1</div>
+                <div data-value="2" data-type="NUMBER" class="numbers key">2</div>
+                <div data-value="3" data-type="NUMBER" class="numbers key">3</div>
+                <div data-value="+" data-type="OPERATOR" class="operations key">+</div>
             </div>
             <div id="column5">
-                <div id="0" type="NUMBER" class="zero numbers key">0</div>
-                <div id="." type="NUMBER" class="decimal numbers key">.</div>
+                <div data-value="0" data-type="NUMBER" class="zero numbers key">0</div>
+                <div data-value="." data-type="NUMBER" class="decimal numbers key">.</div>
                 <div id="equal" class="operations equal">=</div>
             </div>
         </div>
@@ -202,12 +202,13 @@
         }
 
         function handleClick(key) {
-            const type = key.getAttribute("type");
+            const type = key.dataset.type;
+            const value = key.dataset.value;
 
             if(type === 'NUMBER') {
                 if(itemStack.length === 0) {
                     const element = {
-                        data: key.id,
+                        data: value,
                         type: type
                     }
                     itemStack.push(element);
@@ -215,20 +216,21 @@
                     const lastIndex = itemStack.length - 1;
                     if(itemStack[lastIndex].type === 'OPERATOR') {
                         const element = {
-                            data: key.id,
+                            data: value,
                             type: type
                         }
                         itemStack.push(element);
                     } else {
                         const data = itemStack[lastIndex].data;
-                        itemStack[lastIndex].data = data + key.id;
+                        if(value === "." && data.includes(".")) return;
+                        itemStack[lastIndex].data = data + value;
                     }
                 }
             } else {
                 if(itemStack.length === 0) {
-                    if(key.getAttribute("id") === '-') {
+                    if(key.dataset.value === '-') {
                         const element = {
-                            data: key.id,
+                            data: value,
                             type: type
                         }
                         itemStack.push(element);
@@ -236,10 +238,10 @@
                 } else {
                     const lastIndx = itemStack.length - 1;
                     if(itemStack[lastIndx].type === 'OPERATOR') {
-                        itemStack[lastIndx].data = key.id;
+                        itemStack[lastIndx].data = value;
                     } else {
                         const element = {
-                            data: key.id,
+                            data: value,
                             type: type
                         }
                         itemStack.push(element); 
@@ -255,7 +257,6 @@
                 handleClick(keys[i]);
             });
         }
-        // console.log(itemStack);
 
         equalsTo.addEventListener("click", () => {
             const answer = solution();
@@ -268,6 +269,9 @@
                         type: 'NUMBER'
                     }
                     itemStack.push(element);
+                } else {
+                    input.value = "";
+                    alert("Can't divided by 0");
                 }
             } else {
                 alert("Enter a number");
