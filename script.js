@@ -52,9 +52,6 @@ function solution() {
         if (itemStack[i].data === '/') {
             const left = parseFloat(itemStack[i - 1].data);
             const right = parseFloat(itemStack[i + 1].data);
-            if (right === 0) {
-                return;
-            }
             itemStack[i - 1].data = `${left / right}`;
             itemStack.splice(i, 2);
             i--;
